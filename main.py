@@ -1,8 +1,8 @@
 from datetime import datetime, UTC
 from flask import Flask, render_template
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Null
-from sqlalchemy.orm import sessionmaker, relationship, Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, Session, declarative_base
+#from sqlalchemy.ext.declarative
 from sqlalchemy.exc import IntegrityError
 
 #creating database
@@ -21,24 +21,32 @@ class WorkSession(Base):
 Base.metadata.create_all(engine)
 app = Flask(__name__)
 
+
+# Utility function to avoid repeated lines of code
+def switch_aux(aux_name):
+    active_session = db.query(WorkSession).filter(WorkSession.end_time == None).first()
+
+    if active_session and active_session.aux == aux_name:
+        return render_template("base.html", error=f"You are already in {aux_name} AUX!")
+
+    if active_session:
+        active_session.end_time = datetime.now()
+
+    new_session = WorkSession(aux = aux_name)
+    db.add(new_session)
+    db.commit()
+    return render_template("base.html")
+
+
+# productive_hours=productive_hours)
+
 @app.route('/')
 def index():
     return render_template("base.html")
 
 @app.route('/available', methods=['POST'])
 def available():
-    active_session = db.query(WorkSession).filter(WorkSession.end_time == None).first()
-
-    # to throw an error if user clicks on the same aux again to avoid another row for same aux
-    if active_session and active_session.aux == "Available":
-        return render_template("base.html", error = " You are already in Available AUX!")
-
-    if active_session:
-        active_session.end_time = datetime.now()
-    new_session = WorkSession(aux = "Available")
-    db.add(new_session)
-    db.commit()
-    return render_template('base.html')  # productive_hours=productive_hours)
+    return switch_aux("Available")
 
     """
     productive_hours = datetime.now().time().replace(microsecond=0).isoformat()
@@ -50,6 +58,8 @@ def available():
 
 @app.route("/learning", methods=['POST'])
 def learning():
+    return switch_aux("Learning")
+""" << All there repeated lines for each route taken care of in declaring the utility function >>
 
     #to find the active session i.e. the last formed row, where the end_time is Null
     active_session = db.query(WorkSession).filter(WorkSession.end_time == None).first()
@@ -65,10 +75,12 @@ def learning():
     db.add(new_session)
     db.commit()
     return render_template('base.html')
+    """
 
 @app.route("/break", methods=['POST'])
-def learning():
-
+def break_aux():
+    return switch_aux("Break")
+"""
     #to find the active session i.e. the last formed row, where the end_time is Null
     active_session = db.query(WorkSession).filter(WorkSession.end_time == None).first()
 
@@ -83,6 +95,16 @@ def learning():
     db.add(new_session)
     db.commit()
     return render_template('base.html')
+"""
 
+@app.route("/coding", method = ["POST"])
+def coding():
+    return switch_aux("Coding")
+@app.route("/entertainment", method = ["POST"])
+def entertainment():
+    return switch_aux("Entertainment")
+
+
+#@app.route("")
 if __name__ == '__main__':
     app.run(debug = True, port = 5002)
