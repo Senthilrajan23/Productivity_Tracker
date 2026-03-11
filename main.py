@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 from flask import Flask, render_template
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Null
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Null, func
 from sqlalchemy.orm import sessionmaker, relationship, Session, declarative_base
 #from sqlalchemy.ext.declarative
 from sqlalchemy.exc import IntegrityError
@@ -98,14 +98,31 @@ def break_aux():
     return render_template('base.html')
 """
 
-@app.route("/coding", method = ["POST"])
+@app.route("/coding", methods = ["POST"])
 def coding():
     return switch_aux("Coding")
-@app.route("/entertainment", method = ["POST"])
+@app.route("/entertainment", methods = ["POST"])
 def entertainment():
     return switch_aux("Entertainment")
+"""
+@app.route('/result', methods=['POST'])
+def result():
+    
+    result = db.query(WorkSession.aux), func.sum(func.strftime('%s', func.coalesce(WorkSession.end_time, func.current_timestamp())) - func.strftime('%s', WorkSession.start_time)).label("total_seconds")).group_by(WorkSession.aux).all()
+    return render_template("base.html",result=result)
+"""
 
+@app.route('/result', methods=['POST'])
+def result():
+    result = db.query(
+        WorkSession.aux,
+        func.sum(
+            func.strftime('%s', func.coalesce(WorkSession.end_time, func.current_timestamp())) -
+            func.strftime('%s', WorkSession.start_time)
+        ).label("total_seconds")
+    ).group_by(WorkSession.aux).all()
 
+    return render_template("base.html", result=result)
 #@app.route("")
 if __name__ == '__main__':
     app.run(debug = True, port = 5002)

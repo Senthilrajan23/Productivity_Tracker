@@ -27,14 +27,24 @@
 </form>
 <br>
 <h4>{{error}}</h4>
-<!-- <h2>{{productive_hours}}</h2> -->
+<!-- <h2>{productive_hours}} </h2> -->
 
 <br>
 <br>
 <br>
 <br>
-<form action="/Evaluate" method="POST">
+<form action="/result" method="POST">
+
     <button type="submit">Evaluate</button>
 </form>
+{% if result %}
+    <h3>Time spent in each AUX</h3>
+
+    <ul>
+    {% for aux, seconds in result %}
+        <li>{{ aux }} : {{ seconds }} seconds</li>
+    {% endfor %}
+    </ul>
+{% endif %}
 </body>
 </html>
