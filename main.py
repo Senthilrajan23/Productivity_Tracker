@@ -40,6 +40,7 @@ def switch_aux(aux_name):
 
 # productive_hours=productive_hours)
 
+
 @app.route('/')
 def index():
     return render_template("base.html")
