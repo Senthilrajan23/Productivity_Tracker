@@ -1,7 +1,7 @@
 # Productivity Tracker
 
 A simple web-based productivity tracker built using Flask and SQLAlchemy to monitor time spent across different activities (AUX states).
-
+ 
 ---
 
 ## 🚀 Overview
