@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime
 from flask import Flask, render_template
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Null, func
 from sqlalchemy.orm import sessionmaker, relationship, Session, declarative_base
@@ -11,6 +11,7 @@ Base = declarative_base()
 session = sessionmaker(bind=engine)
 db = session()
 
+#Table creation
 class WorkSession(Base):
     __tablename__ = 'Table'
     id = Column(Integer, primary_key=True)
@@ -19,6 +20,7 @@ class WorkSession(Base):
     end_time = Column(DateTime)
 
 Base.metadata.create_all(engine)
+
 app = Flask(__name__)
 
 
@@ -38,8 +40,6 @@ def switch_aux(aux_name):
     return render_template("base.html")
 
 
-# productive_hours=productive_hours)
-
 
 @app.route('/')
 def index():
@@ -49,27 +49,19 @@ def index():
 def available():
     return switch_aux("Available")
 
-    """
-    productive_hours = datetime.now().time().replace(microsecond=0).isoformat()
-    
-    hour = now.hour
-    minute = now.minute
-    productive_hours = round(((hour * 60 + minute)/60),2)
-    """
-
 @app.route("/learning", methods=['POST'])
 def learning():
     return switch_aux("Learning")
-""" << All there repeated lines for each route taken care of in declaring the utility function >>
+""" 
 
-    #to find the active session i.e. the last formed row, where the end_time is Null
+    
     active_session = db.query(WorkSession).filter(WorkSession.end_time == None).first()
 
-    # to throw an error if user clicks on the same aux again to avoid another row for same aux
+    
     if active_session and active_session.aux == "Learning":
         return render_template("base.html", error = " You are already in Learning AUX!")
 
-    # To print the date and time, where the end_time is null
+    
     if active_session:
         active_session.end_time = datetime.now(UTC)
     new_session = WorkSession(aux = "Learning")
@@ -101,9 +93,14 @@ def break_aux():
 @app.route("/coding", methods = ["POST"])
 def coding():
     return switch_aux("Coding")
+
 @app.route("/entertainment", methods = ["POST"])
 def entertainment():
     return switch_aux("Entertainment")
+
+@app.route("/offline", methods=['POST'])
+def offline():
+    return switch_aux("Offline")
 """
 @app.route('/result', methods=['POST'])
 def result():
@@ -112,17 +109,42 @@ def result():
     return render_template("base.html",result=result)
 """
 
+today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 @app.route('/result', methods=['POST'])
 def result():
     result = db.query(
         WorkSession.aux,
         func.sum(
-            func.strftime('%s', func.coalesce(WorkSession.end_time, func.current_timestamp())) -
+            func.strftime('%s', func.coalesce(WorkSession.end_time, func.localtimestamp())) -
             func.strftime('%s', WorkSession.start_time)
         ).label("total_seconds")
+    ).filter(
+        WorkSession.start_time >= today_start
     ).group_by(WorkSession.aux).all()
 
-    return render_template("base.html", result=result)
+
+    # Formatting time from seconds to minutes
+    def format_time(seconds):
+        if seconds < 60:
+            return f"{seconds} seconds"
+
+        minutes = seconds // 60
+        if minutes < 60:
+            return f"{minutes} minutes"
+
+        hours = minutes // 60
+
+        remaining_time = minutes % 60
+        return f"{hours} hr {remaining_time} minutes"
+
+    format_result = []
+    for aux, total_seconds in result:
+        formatted_time = format_time(total_seconds)
+        format_result.append((aux, formatted_time))
+
+    return render_template("base.html", result=format_result)
+
+
 #@app.route("")
 if __name__ == '__main__':
     app.run(debug = True, port = 5002)

@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document</title>
+    <title>Productivity tracker</title>
 </head>
 <body>
 <form action="/available" method="POST">
     <button type="submit">Available</button>
 </form>
 <br>
-<form action="/learning" method="POST">
-    <button type="submit">Learning</button>
+<form action="/break" method="POST">
+    <button type="submit">Break</button>
 </form>
+
 <br>
 <form action="/coding" method="POST">
     <button type="submit">Coding</button>
 </form>
 <br>
-<form action="/break" method="POST">
-    <button type="submit">Break</button>
+
+<form action="/entertainment" method="POST">
+    <button type="submit">Entertainment</button>
 </form>
 <br>
-<form action = "/coding" method = "post">
-    <button type = "submit">Coding</button>
+
+<form action="/learning" method="POST">
+    <button type="submit">Learning</button>
+</form>
+<br>
+<br>
+<form action="/offline" method="POST">
+    <button type="submit">Offline</button>
 </form>
 <br>
 <h4>{{error}}</h4>
@@ -41,8 +49,8 @@
     <h3>Time spent in each AUX</h3>
 
     <ul>
-    {% for aux, seconds in result %}
-        <li>{{ aux }} : {{ seconds }} seconds</li>
+    {% for aux, time in result %}
+        <li>{{ aux }} : {{ time }} </li>
     {% endfor %}
     </ul>
 {% endif %}
