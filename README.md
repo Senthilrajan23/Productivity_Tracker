@@ -67,17 +67,11 @@ While building this project, I learned:
 ## 📂 Project Structure
 Productivity_Tracker
 │
-
 ├── templates/
-
 │ └── base.html
-
 │
-
 ├── main.py
-
 ├── requirements.txt
-
 └── .gitignore
 
 
